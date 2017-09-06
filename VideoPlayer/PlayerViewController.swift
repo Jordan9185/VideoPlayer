@@ -24,6 +24,8 @@ class PlayerViewController: UIViewController {
     
     var isVideoPlaying: Bool = false
     
+    let darkBlueGreyTwoColor = UIColor(red: 8/255, green: 21/255, blue: 35/255, alpha: 1)
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -37,13 +39,27 @@ class PlayerViewController: UIViewController {
         setUpFooterView()
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        
+        if UIDevice.current.orientation.isLandscape {
+            
+            searchController.searchBar.isHidden = true
+            
+        } else {
+            
+            searchController.searchBar.isHidden = false
+            
+        }
+        
+    }
+    
     func setUpHeaderView() {
         
         headerView = UIView()
         
-        headerView.backgroundColor = .black
+        headerView.backgroundColor = darkBlueGreyTwoColor
         
-        self.view.backgroundColor = .black
+        self.view.backgroundColor = darkBlueGreyTwoColor
         
         self.view.addSubview(headerView)
         
@@ -286,6 +302,8 @@ extension PlayerViewController: UISearchBarDelegate {
         playerController.showsPlaybackControls = false
         
         player.addObserver(self, forKeyPath: "status", options: NSKeyValueObservingOptions(), context: nil)
+        
+        playerController.view.backgroundColor = darkBlueGreyTwoColor
         
         self.playVideoView.addSubview(playerController.view)
         
