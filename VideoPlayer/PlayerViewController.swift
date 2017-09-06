@@ -25,6 +25,7 @@ class PlayerViewController: UIViewController {
     var isVideoPlaying: Bool = false
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
 
         setUpHeaderView()
@@ -70,6 +71,8 @@ class PlayerViewController: UIViewController {
         
         searchController.searchBar.sizeToFit()
         
+        searchController.searchBar.placeholder = "Enter URL of video"
+        
         self.headerView.addSubview(searchController.searchBar)
         
     }
@@ -101,7 +104,7 @@ class PlayerViewController: UIViewController {
         footerView = UIView()
         
         let stackView = setStackView()
-        
+            
         footerView.addSubview(stackView)
         
         headerView.addSubview(footerView)
@@ -234,7 +237,7 @@ extension PlayerViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         
-        let urlString = "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
+        let urlString = searchBar.text ?? ""
         
         guard
             
