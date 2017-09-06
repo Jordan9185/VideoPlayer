@@ -14,28 +14,52 @@ class PlayerViewController: UIViewController {
     
     var headerView: UIView!
     
+    var playVideoView: UIView!
+    
+    var footerView: UIView!
+    
     var searchController: UISearchController!
     
-    //let darkBlueGreyTwoColor = UIColor(red: 8, green: 21, blue: 35, alpha: 1)
+    var player: AVPlayer!
+    
+    var isVideoPlaying: Bool = false
+    
+    let darkBlueGreyTwoColor = UIColor(red: 8/255, green: 21/255, blue: 35/255, alpha: 1)
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
 
         setUpHeaderView()
         
+        setUpPlayVideoView()
+        
         setUpSearchBar()
         
-        //setUpAVPlayer()
-        
+        setUpFooterView()
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        
+        if UIDevice.current.orientation.isLandscape {
+            
+            searchController.searchBar.isHidden = true
+            
+        } else {
+            
+            searchController.searchBar.isHidden = false
+            
+        }
+        
+    }
+    
     func setUpHeaderView() {
         
         headerView = UIView()
         
-        headerView.backgroundColor = .black
+        headerView.backgroundColor = darkBlueGreyTwoColor
         
-        self.view.backgroundColor = .black
+        self.view.backgroundColor = darkBlueGreyTwoColor
         
         self.view.addSubview(headerView)
         
@@ -55,40 +79,254 @@ class PlayerViewController: UIViewController {
         
         searchController = UISearchController(searchResultsController: nil)
         
-        //searchController.searchBar.delegate = self
+        searchController.searchBar.delegate = self
         
         searchController.dimsBackgroundDuringPresentation = false
         
         searchController.searchBar.searchBarStyle = .prominent
         
-        //searchController.searchBar.
-        
         searchController.searchBar.sizeToFit()
+        
+        searchController.searchBar.placeholder = "Enter URL of video"
+        
+        clearSearchBarBackgroundColor()
         
         self.headerView.addSubview(searchController.searchBar)
         
     }
     
-    func setUpAVPlayer() {
+    func setUpPlayVideoView() {
         
-        let player = AVPlayer(url: URL(string:"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8")!)
+        playVideoView = UIView()
+        
+        headerView.addSubview(playVideoView)
+        
+        playVideoView.translatesAutoresizingMaskIntoConstraints = false
+        
+        playVideoView.leadingAnchor.constraint(equalTo: headerView.leadingAnchor).isActive = true
+        
+        playVideoView.trailingAnchor.constraint(equalTo: headerView.trailingAnchor).isActive = true
+        
+        playVideoView.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 0).isActive = true
+        
+        playVideoView.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 0).isActive = true
+        
+        playVideoView.widthAnchor.constraint(equalToConstant: headerView.frame.width).isActive = true
+        
+        playVideoView.heightAnchor.constraint(equalToConstant: 200).isActive = true
+        
+    }
+    
+    func setUpFooterView() {
+        
+        footerView = UIView()
+        
+        let stackView = setStackView()
+            
+        footerView.addSubview(stackView)
+        
+        headerView.addSubview(footerView)
+        
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        stackView.leadingAnchor.constraint(equalTo: footerView.leadingAnchor).isActive = true
+        
+        stackView.topAnchor.constraint(equalTo: footerView.topAnchor).isActive = true
+        
+        stackView.widthAnchor.constraint(equalTo: footerView.widthAnchor).isActive = true
+        
+        stackView.heightAnchor.constraint(equalTo: footerView.heightAnchor).isActive = true
+
+        stackView.backgroundColor = .red
+        
+        footerView.translatesAutoresizingMaskIntoConstraints = false
+            
+        footerView.leadingAnchor.constraint(equalTo: headerView.leadingAnchor).isActive = true
+        
+        footerView.trailingAnchor.constraint(equalTo: headerView.trailingAnchor).isActive = true
+        
+        footerView.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -20).isActive = true
+        
+        footerView.widthAnchor.constraint(equalToConstant: headerView.frame.width).isActive = true
+        
+        footerView.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        
+        footerView.backgroundColor = .black
+        
+    }
+    
+    func setStackView() -> UIStackView {
+        
+        let stackView = UIStackView()
+        
+        let playButton = UIButton()
+        
+        playButton.backgroundColor = .black
+        
+        playButton.setTitle("Play", for: .normal)
+        
+        playButton.addTarget(self, action: #selector(videoPlay), for: .touchUpInside)
+        
+        let MuteButton = UIButton()
+        
+        MuteButton.backgroundColor = .black
+        
+        MuteButton.setTitle("Mute", for: .normal)
+        
+        MuteButton.addTarget(self, action: #selector(videoMute), for: .touchUpInside)
+        
+        let flexiableView = UIView()
+        
+        playButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        playButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        
+        MuteButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        MuteButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        
+        stackView.axis = .horizontal
+        
+        stackView.addArrangedSubview(playButton)
+        
+        stackView.addArrangedSubview(flexiableView)
+        
+        stackView.addArrangedSubview(MuteButton)
+        
+        stackView.backgroundColor = .black
+
+        return stackView
+    }
+    
+    func videoPlay(_ sender: UIButton) {
+        
+        guard let player = player else {
+            
+            return
+            
+        }
+        
+        if isVideoPlaying {
+            
+            player.pause()
+            
+            isVideoPlaying = false
+            
+            sender.setTitle("Pause", for: .normal)
+            
+        } else {
+            
+            player.play()
+            
+            isVideoPlaying = true
+            
+            sender.setTitle("Play", for: .normal)
+            
+        }
+        
+    }
+    
+    func videoMute(_ sender:UIButton) {
+        
+        guard let player = player else {
+            
+            return
+        }
+        
+        if player.isMuted {
+            
+            player.isMuted = false
+            
+            sender.setTitle("Mute", for: .normal)
+            
+        } else {
+            
+            player.isMuted = true
+            
+            sender.setTitle("Unmute", for: .normal)
+            
+        }
+
+    }
+    
+    func clearSearchBarBackgroundColor() {
+        
+        guard let UISearchBarBackground: AnyClass = NSClassFromString("UISearchBarBackground") else { return }
+        
+        for view in searchController.searchBar.subviews {
+            
+            for subview in view.subviews {
+                
+                if subview.isKind(of: UISearchBarBackground) {
+                    
+                    subview.alpha = 0
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
+}
+
+extension PlayerViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let urlString = searchBar.text ?? ""
+        
+        guard
+            
+            let url = URL(string: urlString)
+            
+            else {
+    
+            print("url is nil")
+            
+            return
+        }
+        
+        setUpAVPlayer(with: url)
+        
+    }
+    
+    func setUpAVPlayer(with url: URL) {
         
         let playerController = AVPlayerViewController()
         
-        let playerView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 100))
+        player = AVPlayer(url: url)
         
         playerController.player = player
         
-        self.addChildViewController(playerController)
+        playerController.showsPlaybackControls = false
         
-        self.headerView.addSubview(playerView)
+        player.addObserver(self, forKeyPath: "status", options: NSKeyValueObservingOptions(), context: nil)
         
-        playerView.addSubview(playerController.view)
+        playerController.view.backgroundColor = darkBlueGreyTwoColor
+        
+        self.playVideoView.addSubview(playerController.view)
         
         playerController.view.frame = self.view.frame
         
         player.play()
         
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        
+        if keyPath == "status" {
+            
+            isVideoPlaying = true
+        }
+
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        
+        player.removeObserver(self, forKeyPath: "status")
+
     }
     
 }
