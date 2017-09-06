@@ -14,9 +14,9 @@ class PlayerViewController: UIViewController {
     
     var headerView: UIView!
     
-    var searchController: UISearchController!
+    var footerView: UIView!
     
-    //let darkBlueGreyTwoColor = UIColor(red: 8, green: 21, blue: 35, alpha: 1)
+    var searchController: UISearchController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,6 +27,7 @@ class PlayerViewController: UIViewController {
         
         //setUpAVPlayer()
         
+        setUpFooterView()
     }
 
     func setUpHeaderView() {
@@ -61,34 +62,88 @@ class PlayerViewController: UIViewController {
         
         searchController.searchBar.searchBarStyle = .prominent
         
-        //searchController.searchBar.
-        
         searchController.searchBar.sizeToFit()
         
         self.headerView.addSubview(searchController.searchBar)
         
     }
     
-    func setUpAVPlayer() {
+    func setUpFooterView() {
         
-        let player = AVPlayer(url: URL(string:"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8")!)
+        footerView = UIView()
         
-        let playerController = AVPlayerViewController()
+        let stackView = setStackView()
         
-        let playerView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 100))
+        footerView.addSubview(stackView)
         
-        playerController.player = player
+        headerView.addSubview(footerView)
         
-        self.addChildViewController(playerController)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        self.headerView.addSubview(playerView)
+        stackView.leadingAnchor.constraint(equalTo: footerView.leadingAnchor).isActive = true
         
-        playerView.addSubview(playerController.view)
+        stackView.topAnchor.constraint(equalTo: footerView.topAnchor).isActive = true
         
-        playerController.view.frame = self.view.frame
+        stackView.widthAnchor.constraint(equalTo: footerView.widthAnchor).isActive = true
         
-        player.play()
+        stackView.heightAnchor.constraint(equalTo: footerView.heightAnchor).isActive = true
+
+        stackView.backgroundColor = .red
+        
+        footerView.translatesAutoresizingMaskIntoConstraints = false
+            
+        footerView.leadingAnchor.constraint(equalTo: headerView.leadingAnchor).isActive = true
+        
+        footerView.trailingAnchor.constraint(equalTo: headerView.trailingAnchor).isActive = true
+        
+        footerView.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -20).isActive = true
+        
+        footerView.widthAnchor.constraint(equalToConstant: headerView.frame.width).isActive = true
+        
+        footerView.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        
+        footerView.backgroundColor = .black
         
     }
     
+    func setStackView() -> UIStackView {
+        
+        let stackView = UIStackView()
+        
+        let playButton = UIButton()
+        
+        playButton.backgroundColor = .black
+        
+        playButton.setTitle("Play", for: .normal)
+        
+        let MuteButton = UIButton()
+        
+        MuteButton.backgroundColor = .black
+        
+        MuteButton.setTitle("Mute", for: .normal)
+        
+        let flexiableView = UIView()
+        
+        playButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        playButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        
+        MuteButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        MuteButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        
+        stackView.axis = .horizontal
+        
+        stackView.addArrangedSubview(playButton)
+        
+        stackView.addArrangedSubview(flexiableView)
+        
+        stackView.addArrangedSubview(MuteButton)
+        
+        stackView.backgroundColor = .black
+
+        return stackView
+    }
+    
 }
+
