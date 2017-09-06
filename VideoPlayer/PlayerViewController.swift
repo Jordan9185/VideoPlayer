@@ -73,6 +73,8 @@ class PlayerViewController: UIViewController {
         
         searchController.searchBar.placeholder = "Enter URL of video"
         
+        clearSearchBarBackgroundColor()
+        
         self.headerView.addSubview(searchController.searchBar)
         
     }
@@ -231,6 +233,25 @@ class PlayerViewController: UIViewController {
 
     }
     
+    func clearSearchBarBackgroundColor() {
+        
+        guard let UISearchBarBackground: AnyClass = NSClassFromString("UISearchBarBackground") else { return }
+        
+        for view in searchController.searchBar.subviews {
+            
+            for subview in view.subviews {
+                
+                if subview.isKind(of: UISearchBarBackground) {
+                    
+                    subview.alpha = 0
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
 }
 
 extension PlayerViewController: UISearchBarDelegate {
