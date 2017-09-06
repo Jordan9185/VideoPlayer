@@ -14,18 +14,24 @@ class PlayerViewController: UIViewController {
     
     var headerView: UIView!
     
+    var playVideoView: UIView!
+    
     var footerView: UIView!
     
     var searchController: UISearchController!
+    
+    var player: AVPlayer!
+    
+    var isVideoPlaying: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setUpHeaderView()
         
-        setUpSearchBar()
+        setUpPlayVideoView()
         
-        //setUpAVPlayer()
+        setUpSearchBar()
         
         setUpFooterView()
     }
@@ -56,7 +62,7 @@ class PlayerViewController: UIViewController {
         
         searchController = UISearchController(searchResultsController: nil)
         
-        //searchController.searchBar.delegate = self
+        searchController.searchBar.delegate = self
         
         searchController.dimsBackgroundDuringPresentation = false
         
@@ -65,6 +71,28 @@ class PlayerViewController: UIViewController {
         searchController.searchBar.sizeToFit()
         
         self.headerView.addSubview(searchController.searchBar)
+        
+    }
+    
+    func setUpPlayVideoView() {
+        
+        playVideoView = UIView()
+        
+        headerView.addSubview(playVideoView)
+        
+        playVideoView.translatesAutoresizingMaskIntoConstraints = false
+        
+        playVideoView.leadingAnchor.constraint(equalTo: headerView.leadingAnchor).isActive = true
+        
+        playVideoView.trailingAnchor.constraint(equalTo: headerView.trailingAnchor).isActive = true
+        
+        playVideoView.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 0).isActive = true
+        
+        playVideoView.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 0).isActive = true
+        
+        playVideoView.widthAnchor.constraint(equalToConstant: headerView.frame.width).isActive = true
+        
+        playVideoView.heightAnchor.constraint(equalToConstant: 200).isActive = true
         
     }
     
@@ -116,11 +144,15 @@ class PlayerViewController: UIViewController {
         
         playButton.setTitle("Play", for: .normal)
         
+        playButton.addTarget(self, action: #selector(videoPlay), for: .touchUpInside)
+        
         let MuteButton = UIButton()
         
         MuteButton.backgroundColor = .black
         
         MuteButton.setTitle("Mute", for: .normal)
+        
+        MuteButton.addTarget(self, action: #selector(videoMute), for: .touchUpInside)
         
         let flexiableView = UIView()
         
@@ -145,5 +177,114 @@ class PlayerViewController: UIViewController {
         return stackView
     }
     
+    func videoPlay(_ sender: UIButton) {
+        
+        guard let player = player else {
+            
+            return
+            
+        }
+        
+        if isVideoPlaying {
+            
+            player.pause()
+            
+            isVideoPlaying = false
+            
+            sender.setTitle("Pause", for: .normal)
+            
+        } else {
+            
+            player.play()
+            
+            isVideoPlaying = true
+            
+            sender.setTitle("Play", for: .normal)
+            
+        }
+        
+    }
+    
+    func videoMute(_ sender:UIButton) {
+        
+        guard let player = player else {
+            
+            return
+        }
+        
+        if player.isMuted {
+            
+            player.isMuted = false
+            
+            sender.setTitle("Mute", for: .normal)
+            
+        } else {
+            
+            player.isMuted = true
+            
+            sender.setTitle("Unmute", for: .normal)
+            
+        }
+
+    }
+    
 }
 
+extension PlayerViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let urlString = "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
+        
+        guard
+            
+            let url = URL(string: urlString)
+            
+            else {
+    
+            print("url is nil")
+            
+            return
+        }
+        
+        setUpAVPlayer(with: url)
+        
+    }
+    
+    func setUpAVPlayer(with url: URL) {
+        
+        let playerController = AVPlayerViewController()
+        
+        player = AVPlayer(url: url)
+        
+        playerController.player = player
+        
+        playerController.showsPlaybackControls = false
+        
+        player.addObserver(self, forKeyPath: "status", options: NSKeyValueObservingOptions(), context: nil)
+        
+        self.playVideoView.addSubview(playerController.view)
+        
+        playerController.view.frame = self.view.frame
+        
+        player.play()
+        
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        
+        if keyPath == "status" {
+            
+            isVideoPlaying = true
+        }
+
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        
+        player.removeObserver(self, forKeyPath: "status")
+
+    }
+    
+}
